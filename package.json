@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "publisher": "bobris",
     "engines": {
-        "vscode": "^0.10.11"
+        "vscode": "^0.10.6"
     },
     "categories": [
         "Other"
@@ -21,7 +21,7 @@
     },
     "devDependencies": {
         "typescript": "^1.8.9",
-        "vscode": "^0.10.11"
+        "vscode": "^0.11.0"
     },
     "contributes": {
         "snippets": [
