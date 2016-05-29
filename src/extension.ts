@@ -95,10 +95,14 @@ export function activate(context: vscode.ExtensionContext) {
             case "testUpdated": {
                 let state = data as TestSvrState;
                 testStatus = "";
-                state.agents.forEach(a=> {
+                state.agents.forEach(a => {
                     testStatus += " F:" + a.testsFailed + "/" + a.totalTests + " " + a.duration.toFixed(0) + "ms";
                 });
                 updateStatusBar();
+                break;
+            }
+            case "focusPlace": {
+                focusPlace(data.fn, data.pos);
                 break;
             }
             default: {
@@ -108,8 +112,23 @@ export function activate(context: vscode.ExtensionContext) {
         }
     };
 
+    function focusPlace(fn: string, pos: number[]) {
+        function revealPlace(editor: vscode.TextEditor) {
+            editor.selection = new vscode.Selection(pos[0] - 1, (pos[1] || 1) - 1, pos[0] - 1, (pos[1] || 1) - 1);
+            editor.revealRange(new vscode.Range(pos[0] - 1, (pos[1] || 1) - 1, (pos[2] || pos[0]) - 1, (pos[3] || pos[1] || 1) - 1));
+        }
+        const activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor && activeEditor.document.uri.toString() === vscode.Uri.file(fn).toString()) {
+            revealPlace(activeEditor);
+        } else {
+            vscode.workspace.openTextDocument(fn)
+                .then(vscode.window.showTextDocument)
+                .then(revealPlace);
+        }
+    }
+
     reconnect();
-    
+
     // create a decorator type that we use to decorate small numbers
     var consoleLogDecorationType = vscode.window.createTextEditorDecorationType({
         borderWidth: '1px',
@@ -156,6 +175,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (!activeEditor) {
             return;
         }
+        /*
         var regEx = /\d+/g;
         var text = activeEditor.document.fileName;
         var smallNumbers: vscode.DecorationOptions[] = [];
@@ -173,11 +193,12 @@ export function activate(context: vscode.ExtensionContext) {
 
         }
         activeEditor.setDecorations(consoleLogDecorationType, smallNumbers);
+        */
     }
 
     context.subscriptions.push(consoleLogDecorationType);
 }
-	
+
 
 // this method is called when your extension is deactivated
 export function deactivate() {
