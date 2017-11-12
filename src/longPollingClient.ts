@@ -138,8 +138,8 @@ export class Connection {
       Connection: "keep-alive"
     };
     var req = http.request(cliReqOpt, res => {
-      console.log(`LSTATUS: ${res.statusCode}`);
-      console.log(`LHEADERS: ${JSON.stringify(res.headers)}`);
+      //console.log(`LSTATUS: ${res.statusCode}`);
+      //console.log(`LHEADERS: ${JSON.stringify(res.headers)}`);
       if (res.statusCode < 200 || res.statusCode >= 300) {
         this.longPolling = null;
         this.startLongPolling();
@@ -148,7 +148,7 @@ export class Connection {
       res.setEncoding("utf8");
       let resp = "";
       res.on("data", chunk => {
-        console.log(`LBODY: ${chunk}`);
+        //console.log(`LBODY: ${chunk}`);
         resp += chunk;
       });
       res.on("end", () => {
