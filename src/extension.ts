@@ -1,8 +1,7 @@
-"use strict";
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import * as longPollingClient from "./longPollingClient";
+import * as utils from "./utils";
+import { stringify } from "querystring";
 
 export interface StackFrame {
   functionName?: string;
@@ -35,44 +34,94 @@ export interface TestSvrState {
   agents: TestResultsHolder[];
 }
 
+let liveReloadEnabled = false;
+let coverageEnabled = false;
+let coverageCache = new Map<string, number[]>();
+
 export function activate(context: vscode.ExtensionContext) {
   console.log("Bobril companion is now active!");
 
   let c = new longPollingClient.Connection("http://localhost:8080/bb/api/main");
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("bobril.toggleCoverage", async () => {
+      c.send("setCoverage", { value: !coverageEnabled });
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("bobril.toggleLiveReload", async () => {
+      c.send("setLiveReload", { value: !liveReloadEnabled });
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("bobril.statusBarClicked", async () => {
+      const quickPick = vscode.window.createQuickPick();
+      quickPick.items = [
+        { label: "Toggle Coverage" },
+        { label: "Toggle Live Reload" }
+      ] as vscode.QuickPickItem[];
+
+      quickPick.onDidChangeSelection((selection: vscode.QuickPickItem[]) => {
+        if (selection[0]) {
+          switch (quickPick.items.indexOf(selection[0])) {
+            case 0:
+              vscode.commands.executeCommand("bobril.toggleCoverage");
+              break;
+            case 1:
+              vscode.commands.executeCommand("bobril.toggleLiveReload");
+              break;
+          }
+        }
+      });
+      quickPick.onDidHide(() => quickPick.dispose());
+      quickPick.show();
+    })
+  );
+
   let statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     10
   );
+  statusBarItem.command = "bobril.statusBarClicked";
   let connected = false;
-  let disconnected = false;
   let reconnectDelay = 0;
+  let compiling = false;
   let compilationStatus = "";
   let testStatus = "";
 
   function updateStatusBar() {
-    let s = "Disconnected";
     if (connected) {
-      s = "Connected";
-      if (compilationStatus || testStatus) s = compilationStatus + testStatus;
-    } else if (!disconnected) {
-      s = "Connecting";
+      let s = "";
+      if (liveReloadEnabled) {
+        s += "$(refresh)";
+      }
+      if (coverageEnabled) {
+        s += "$(checklist)";
+      }
+      if (compiling) {
+        s += "$(zap~spin)";
+      } else {
+        s += "$(zap)";
+      }
+      s += compilationStatus + testStatus;
+      statusBarItem.text = s;
+      statusBarItem.show();
+    } else {
+      statusBarItem.hide();
     }
-    statusBarItem.text = s;
-    statusBarItem.show();
   }
 
   function reconnect() {
-    disconnected = false;
     c.connect();
     updateStatusBar();
   }
 
   c.onClose = () => {
     connected = false;
-    disconnected = true;
     updateStatusBar();
-    if (reconnectDelay < 30000) reconnectDelay += 1000;
+    if (reconnectDelay < 30000) {
+      reconnectDelay += 1000;
+    }
     setTimeout(() => {
       reconnect();
     }, reconnectDelay);
@@ -95,7 +144,13 @@ export function activate(context: vscode.ExtensionContext) {
       }
       case "compilationFinished": {
         compilationStatus =
-          "E:" + data.errors + " W:" + data.warnings + " " + data.time + "ms";
+          "$(error)" +
+          data.errors +
+          "$(warning)" +
+          data.warnings +
+          "$(watch)" +
+          data.time +
+          "ms";
         updateStatusBar();
         break;
       }
@@ -104,11 +159,11 @@ export function activate(context: vscode.ExtensionContext) {
         testStatus = "";
         state.agents.forEach(a => {
           testStatus +=
-            " F:" +
+            (a.running ? "$(microscope~spin)" : "$(microscope)") +
             a.testsFailed +
             "/" +
             a.totalTests +
-            " " +
+            "$(watch)" +
             a.duration.toFixed(0) +
             "ms";
         });
@@ -117,6 +172,21 @@ export function activate(context: vscode.ExtensionContext) {
       }
       case "focusPlace": {
         focusPlace(data.fn, data.pos);
+        break;
+      }
+      case "setLiveReload": {
+        liveReloadEnabled = data.value;
+        updateStatusBar();
+        break;
+      }
+      case "setCoverage": {
+        coverageEnabled = data.value;
+        updateStatusBar();
+        break;
+      }
+      case "coverageUpdated": {
+        coverageCache.clear();
+        triggerUpdateDecorations();
         break;
       }
       default: {
@@ -159,19 +229,20 @@ export function activate(context: vscode.ExtensionContext) {
   reconnect();
 
   // create a decorator type that we use to decorate small numbers
-  var consoleLogDecorationType = vscode.window.createTextEditorDecorationType({
-    borderWidth: "1px",
-    borderStyle: "solid",
-    overviewRulerColor: "blue",
-    overviewRulerLane: vscode.OverviewRulerLane.Right,
-    light: {
-      // this color will be used in light color themes
-      borderColor: "darkblue"
-    },
-    dark: {
-      // this color will be used in dark color themes
-      borderColor: "lightblue"
+  var fullyCoveredDecorationType = vscode.window.createTextEditorDecorationType(
+    {
+      backgroundColor: "rgba(0,255,0,20%)"
     }
+  );
+
+  var partiallyCoveredDecorationType = vscode.window.createTextEditorDecorationType(
+    {
+      backgroundColor: "rgba(255,255,0,40%)"
+    }
+  );
+
+  var notCoveredDecorationType = vscode.window.createTextEditorDecorationType({
+    backgroundColor: "rgba(255,0,0,20%)"
   });
 
   var activeEditor = vscode.window.activeTextEditor;
@@ -200,41 +271,90 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions
   );
 
-  var timeout = null;
+  var timeout: NodeJS.Timer | undefined = undefined;
   function triggerUpdateDecorations() {
     if (timeout) {
       clearTimeout(timeout);
     }
-    timeout = setTimeout(updateDecorations, 500);
+    timeout = setTimeout(updateDecorations, 100);
+  }
+
+  interface FileCoverageResponse {
+    status: "Unknown" | "Calculating" | "Done";
+    ranges: number[];
   }
 
   function updateDecorations() {
     if (!activeEditor) {
       return;
     }
-    /*
-        var regEx = /\d+/g;
-        var text = activeEditor.document.fileName;
-        var smallNumbers: vscode.DecorationOptions[] = [];
-        var match;
-        while (match = regEx.exec(text)) {
-            var startPos = activeEditor.document.positionAt(match.index);
-            var endPos = activeEditor.document.positionAt(match.index + match[0].length);
-            var decoration = <vscode.DecorationOptions>{
-                range: new vscode.Range(startPos, endPos),
-                hoverMessage: 'Number **' + match[0] + '**'
-            };
-            if (match[0].length < 3) {
-                smallNumbers.push(decoration);
-            }
-
+    var doc = activeEditor.document;
+    var fileName = doc.fileName;
+    if (coverageCache.has(fileName)) {
+      var r = coverageCache.get(fileName)!;
+      var coverageDecorations: vscode.DecorationOptions[][] = [[], [], []];
+      for (var i = 0; i < r.length; ) {
+        var range = new vscode.Range(r[i + 1], r[i + 2], r[i + 3], r[i + 4]);
+        var hover = "";
+        switch (r[i]) {
+          case 0:
+            hover = "Statement: " + r[i + 5];
+            break;
+          case 1:
+            hover = "Condition Falsy: " + r[i + 5] + " Truthy: " + r[i + 6];
+            break;
+          case 2:
+            hover = "Function: " + r[i + 5];
+            break;
+          case 3:
+            hover = "Switch Branch: " + r[i + 5];
+            break;
         }
-        activeEditor.setDecorations(consoleLogDecorationType, smallNumbers);
-        */
+        var decoration = <vscode.DecorationOptions>{
+          range,
+          hoverMessage: hover
+        };
+        let covType = 0;
+        if (r[i] != 1) {
+          if (r[i + 5]) covType = 2;
+        } else {
+          if (r[i + 5]) covType++;
+          if (r[i + 6]) covType++;
+        }
+        coverageDecorations[covType].push(decoration);
+        i += r[i] != 1 ? 6 : 7;
+      }
+      activeEditor!.setDecorations(
+        fullyCoveredDecorationType,
+        coverageDecorations[2]
+      );
+      activeEditor!.setDecorations(
+        partiallyCoveredDecorationType,
+        coverageDecorations[1]
+      );
+      activeEditor!.setDecorations(
+        notCoveredDecorationType,
+        coverageDecorations[0]
+      );
+    } else {
+      utils
+        .postRequest<FileCoverageResponse>("/bb/api/getFileCoverage", {
+          fileName
+        })
+        .then(resp => {
+          if (resp.status == "Done") {
+            var r = resp.ranges;
+            coverageCache.set(fileName, r);
+            triggerUpdateDecorations();
+          }
+        });
+    }
   }
 
-  context.subscriptions.push(consoleLogDecorationType);
+  context.subscriptions.push(fullyCoveredDecorationType);
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  coverageCache.clear();
+}

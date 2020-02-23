@@ -5,33 +5,33 @@ export class Connection {
   private url: string;
   private id: string;
   private toSend: any[];
-  private sendTimer: NodeJS.Timer;
+  private sendTimer?: NodeJS.Timer;
   private closed: boolean;
-  private longPolling: http.ClientRequest;
-  private heartBeatTimer: NodeJS.Timer;
+  private longPolling?: http.ClientRequest;
+  private heartBeatTimer?: NodeJS.Timer;
 
-  onMessage: (connection: Connection, message: string, data: any) => void;
-  onClose: (connection: Connection) => void;
+  onMessage?: (connection: Connection, message: string, data: any) => void;
+  onClose?: (connection: Connection) => void;
 
   constructor(url: string) {
-    this.onMessage = null;
-    this.onClose = null;
+    this.onMessage = undefined;
+    this.onClose = undefined;
     this.url = url;
     this.toSend = [];
     this.id = "";
-    this.sendTimer = null;
+    this.sendTimer = undefined;
     this.closed = false;
-    this.longPolling = null;
-    this.heartBeatTimer = null;
+    this.longPolling = undefined;
+    this.heartBeatTimer = undefined;
   }
 
   connect() {
     this.toSend = [];
     this.id = "";
-    this.sendTimer = null;
+    this.sendTimer = undefined;
     this.closed = false;
-    this.longPolling = null;
-    this.heartBeatTimer = null;
+    this.longPolling = undefined;
+    this.heartBeatTimer = undefined;
     this.reSendTimer();
   }
 
@@ -41,19 +41,23 @@ export class Connection {
   }
 
   close() {
-    if (this.closed) return;
+    if (this.closed) {
+      return;
+    }
     if (this.longPolling) {
       this.longPolling.abort();
-      this.longPolling = null;
+      this.longPolling = undefined;
     }
     this.closed = true;
     this.toSend = [];
-    if (this.onClose != null) this.onClose(this);
+    if (this.onClose !== undefined) {
+      this.onClose(this);
+    }
     this.reSendTimer();
   }
 
   private reSendTimer() {
-    if (this.sendTimer == null && (!this.closed || this.id != "")) {
+    if (this.sendTimer === undefined && (!this.closed || this.id !== "")) {
       this.sendTimer = setTimeout(() => {
         this.doSend();
       }, 10);
@@ -77,15 +81,17 @@ export class Connection {
     let m = data.m;
     if (Array.isArray(m)) {
       for (let i = 0; i < m.length; i++) {
-        this.onMessage(this, m[i].m, m[i].d);
+        this.onMessage!(this, m[i].m, m[i].d);
       }
     }
     return true;
   }
 
   private doSend() {
-    this.sendTimer = null;
-    if (this.closed && this.id === "") return;
+    this.sendTimer = undefined;
+    if (this.closed && this.id === "") {
+      return;
+    }
     let cliReqOpt = <any>url.parse(this.url);
     cliReqOpt.method = "POST";
     cliReqOpt.headers = {
@@ -94,7 +100,7 @@ export class Connection {
     var req = http.request(cliReqOpt, res => {
       //console.log(`STATUS: ${res.statusCode}`);
       //console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-      if (res.statusCode < 200 || res.statusCode >= 300) {
+      if (res.statusCode! < 200 || res.statusCode! >= 300) {
         this.close();
         req.abort();
         return;
@@ -111,7 +117,9 @@ export class Connection {
           this.close();
           return;
         }
-        if (!this.longPolling) this.startLongPolling();
+        if (!this.longPolling) {
+          this.startLongPolling();
+        }
         this.startHeartBeat();
       });
     });
@@ -126,12 +134,16 @@ export class Connection {
       )
     );
     req.end();
-    if (this.closed) this.id = "";
+    if (this.closed) {
+      this.id = "";
+    }
     this.toSend = [];
   }
 
   private startLongPolling() {
-    if (this.closed || this.id === "") return;
+    if (this.closed || this.id === "") {
+      return;
+    }
     let cliReqOpt = <any>url.parse(this.url);
     cliReqOpt.method = "POST";
     cliReqOpt.headers = {
@@ -140,8 +152,8 @@ export class Connection {
     var req = http.request(cliReqOpt, res => {
       //console.log(`LSTATUS: ${res.statusCode}`);
       //console.log(`LHEADERS: ${JSON.stringify(res.headers)}`);
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        this.longPolling = null;
+      if (res.statusCode! < 200 || res.statusCode! >= 300) {
+        this.longPolling = undefined;
         this.startLongPolling();
         return;
       }
@@ -152,7 +164,7 @@ export class Connection {
         resp += chunk;
       });
       res.on("end", () => {
-        this.longPolling = null;
+        this.longPolling = undefined;
         if (!this.parseResponse(resp)) {
           this.id = "";
           this.close();
@@ -163,7 +175,7 @@ export class Connection {
       });
     });
     req.on("error", e => {
-      this.longPolling = null;
+      this.longPolling = undefined;
       this.close();
     });
     req.end(JSON.stringify({ id: this.id }));
@@ -171,11 +183,11 @@ export class Connection {
   }
 
   private startHeartBeat() {
-    if (this.heartBeatTimer != null) {
+    if (this.heartBeatTimer !== undefined) {
       clearTimeout(this.heartBeatTimer);
     }
     this.heartBeatTimer = setTimeout(() => {
-      this.heartBeatTimer = null;
+      this.heartBeatTimer = undefined;
       this.doSend();
     }, 30000);
   }
