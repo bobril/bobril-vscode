@@ -276,7 +276,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (timeout) {
       clearTimeout(timeout);
     }
-    timeout = setTimeout(updateDecorations, 100);
+    timeout = setTimeout(updateDecorations, 20);
   }
 
   interface FileCoverageResponse {
@@ -310,7 +310,7 @@ export function activate(context: vscode.ExtensionContext) {
             hover = "Switch Branch: " + r[i + 5];
             break;
         }
-        var decoration = <vscode.DecorationOptions>{
+        var decoration = {
           range,
           hoverMessage: hover
         };
@@ -345,7 +345,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (resp.status == "Done") {
             var r = resp.ranges;
             coverageCache.set(fileName, r);
-            triggerUpdateDecorations();
+            updateDecorations();
           }
         });
     }

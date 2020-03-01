@@ -1,11 +1,13 @@
 # Change Log
 
-## [Unreleased]
+## 0.5.0
 
 - Added commands to toggle Coverage and Live Reload
 - StatusBar is nicer and could be clicked
 - StatusBar is shown only when connected to Bobril-build
 - Coverage highlighting
+
+Note: Coverage feature needs Bobril-build 1.13+
 
 ## 0.4.0
 
