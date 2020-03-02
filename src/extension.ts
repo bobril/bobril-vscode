@@ -138,11 +138,13 @@ export function activate(context: vscode.ExtensionContext) {
     }
     switch (message) {
       case "compilationStarted": {
-        compilationStatus = "Compiling";
+        compiling = true;
+        compilationStatus = "";
         updateStatusBar();
         break;
       }
       case "compilationFinished": {
+        compiling = false;
         compilationStatus =
           "$(error)" +
           data.errors +

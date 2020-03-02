@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.5.1
+
+- Small fix in StatusBar compiling visualization
+
 ## 0.5.0
 
 - Added commands to toggle Coverage and Live Reload
