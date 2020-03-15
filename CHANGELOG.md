@@ -1,5 +1,7 @@
 # Change Log
 
+- Updated snippets
+
 ## 0.5.1
 
 - Small fix in StatusBar compiling visualization

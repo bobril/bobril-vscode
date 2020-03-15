@@ -1,17 +1,22 @@
 {
     "importAll": {
         "prefix": "ima",
-        "body": "import * as ${1:alias} from '${2:module}';\n$0",
+        "body": "import * as ${1:alias} from \"${2:module}\";\n$0",
         "description": "Imports all as alias from the module"
     },
     "importBobril": {
         "prefix": "imb",
-        "body": "import * as b from 'bobril';\n$0",
+        "body": "import * as b from \"bobril\";\n$0",
         "description": "Imports Bobril as it should be"
+    },
+    "importBobx": {
+        "prefix": "imbo",
+        "body": "import * as bobx from \"bobx\";\n$0",
+        "description": "Imports Bobx as it should be"
     },
     "importBobflux": {
         "prefix": "imf",
-        "body": "import * as f from 'bobflux';\n$0",
+        "body": "import * as f from \"bobflux\";\n$0",
         "description": "Imports Bobflux as it should be"
     },
     "consoleLog": {
@@ -41,6 +46,6 @@
             "});",
             ""
         ],
-        "description": "Bobril Component"
+        "description": "Class based Bobril Component"
     }
 }
