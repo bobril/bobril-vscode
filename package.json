@@ -2,11 +2,12 @@
   "name": "bobril",
   "displayName": "bobril",
   "description": "Help you to code in Bobril",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "publisher": "bobris",
   "engines": {
     "vscode": "^1.42.0"
   },
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/bobril/bobril-vscode"
   },
@@ -56,6 +57,20 @@
         "category": "Bobril",
         "command": "bobril.toggleLiveReload",
         "title": "Toggle Live Reload"
+      }
+    ],
+    "languages": [
+      {
+        "id": "json",
+        "filenames": [
+          ".bbrc"
+        ]
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": ".bbrc",
+        "url": "./schema/bbrc.json"
       }
     ]
   }

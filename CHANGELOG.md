@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.6.0
+
+- Schema for .bbrc files
 - Updated snippets
 
 ## 0.5.1
