@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.6.1
+
+- Add bbVersion to .bbrc schema
+
 ## 0.6.0
 
 - Schema for .bbrc files
