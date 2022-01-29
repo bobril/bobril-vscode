@@ -2,7 +2,7 @@
   "name": "bobril",
   "displayName": "bobril",
   "description": "Help you to code in Bobril",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "publisher": "bobris",
   "engines": {
     "vscode": "^1.42.0"
@@ -30,9 +30,9 @@
     "@types/mocha": "*",
     "@types/node": "*",
     "@types/vscode": "*",
+    "eslint": "*",
     "glob": "*",
     "mocha": "*",
-    "eslint": "*",
     "typescript": "*",
     "vscode-test": "*"
   },

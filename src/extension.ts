@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as longPollingClient from "./longPollingClient";
 import * as utils from "./utils";
-import { stringify } from "querystring";
 
 export interface StackFrame {
   functionName?: string;
@@ -58,21 +57,23 @@ export function activate(context: vscode.ExtensionContext) {
       const quickPick = vscode.window.createQuickPick();
       quickPick.items = [
         { label: "Toggle Coverage" },
-        { label: "Toggle Live Reload" }
+        { label: "Toggle Live Reload" },
       ] as vscode.QuickPickItem[];
 
-      quickPick.onDidChangeSelection((selection: vscode.QuickPickItem[]) => {
-        if (selection[0]) {
-          switch (quickPick.items.indexOf(selection[0])) {
-            case 0:
-              vscode.commands.executeCommand("bobril.toggleCoverage");
-              break;
-            case 1:
-              vscode.commands.executeCommand("bobril.toggleLiveReload");
-              break;
+      quickPick.onDidChangeSelection(
+        (selection: readonly vscode.QuickPickItem[]) => {
+          if (selection[0]) {
+            switch (quickPick.items.indexOf(selection[0])) {
+              case 0:
+                vscode.commands.executeCommand("bobril.toggleCoverage");
+                break;
+              case 1:
+                vscode.commands.executeCommand("bobril.toggleLiveReload");
+                break;
+            }
           }
         }
-      });
+      );
       quickPick.onDidHide(() => quickPick.dispose());
       quickPick.show();
     })
@@ -159,7 +160,7 @@ export function activate(context: vscode.ExtensionContext) {
       case "testUpdated": {
         let state = data as TestSvrState;
         testStatus = "";
-        state.agents.forEach(a => {
+        state.agents.forEach((a) => {
           testStatus +=
             (a.running ? "$(microscope~spin)" : "$(microscope)") +
             a.testsFailed +
@@ -233,18 +234,17 @@ export function activate(context: vscode.ExtensionContext) {
   // create a decorator type that we use to decorate small numbers
   var fullyCoveredDecorationType = vscode.window.createTextEditorDecorationType(
     {
-      backgroundColor: "rgba(0,255,0,20%)"
+      backgroundColor: "rgba(0,255,0,20%)",
     }
   );
 
-  var partiallyCoveredDecorationType = vscode.window.createTextEditorDecorationType(
-    {
-      backgroundColor: "rgba(255,255,0,40%)"
-    }
-  );
+  var partiallyCoveredDecorationType =
+    vscode.window.createTextEditorDecorationType({
+      backgroundColor: "rgba(255,255,0,40%)",
+    });
 
   var notCoveredDecorationType = vscode.window.createTextEditorDecorationType({
-    backgroundColor: "rgba(255,0,0,20%)"
+    backgroundColor: "rgba(255,0,0,20%)",
   });
 
   var activeEditor = vscode.window.activeTextEditor;
@@ -253,7 +253,7 @@ export function activate(context: vscode.ExtensionContext) {
   }
 
   vscode.window.onDidChangeActiveTextEditor(
-    editor => {
+    (editor) => {
       activeEditor = editor;
       if (editor) {
         triggerUpdateDecorations();
@@ -264,7 +264,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   vscode.workspace.onDidChangeTextDocument(
-    event => {
+    (event) => {
       if (activeEditor && event.document === activeEditor.document) {
         triggerUpdateDecorations();
       }
@@ -314,7 +314,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
         var decoration = {
           range,
-          hoverMessage: hover
+          hoverMessage: hover,
         };
         let covType = 0;
         if (r[i] != 1) {
@@ -341,9 +341,9 @@ export function activate(context: vscode.ExtensionContext) {
     } else {
       utils
         .postRequest<FileCoverageResponse>("/bb/api/getFileCoverage", {
-          fileName
+          fileName,
         })
-        .then(resp => {
+        .then((resp) => {
           if (resp.status == "Done") {
             var r = resp.ranges;
             coverageCache.set(fileName, r);

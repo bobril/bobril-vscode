@@ -102,6 +102,10 @@
                 "tsconfigUpdate": {
                     "type": "boolean"
                 },
+                "library": {
+                    "type": "boolean",
+                    "description": "When true bb build will autoenable noHtml mode and bundle will became esm library"
+                },
                 "buildOutputDir": {
                     "type": "string",
                     "default": "dist"
