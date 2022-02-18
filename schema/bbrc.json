@@ -26,10 +26,11 @@
                 "jasmineVersion": {
                     "type": "string",
                     "enum": [
-                        "299",
-                        "330"
+                        "2.99",
+                        "3.3",
+                        "4.0"
                     ],
-                    "default": "330"
+                    "default": "3.3"
                 },
                 "nohtml": {
                     "type": "boolean",
