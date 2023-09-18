@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.7.0
+
+- Add `imports` to .bbrc schema
+
 ## 0.6.3
 
 - Add jasmineVersion 4.0

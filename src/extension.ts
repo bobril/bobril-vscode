@@ -273,7 +273,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions
   );
 
-  var timeout: NodeJS.Timer | undefined = undefined;
+  var timeout: NodeJS.Timeout | undefined = undefined;
   function triggerUpdateDecorations() {
     if (timeout) {
       clearTimeout(timeout);
@@ -295,7 +295,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (coverageCache.has(fileName)) {
       var r = coverageCache.get(fileName)!;
       var coverageDecorations: vscode.DecorationOptions[][] = [[], [], []];
-      for (var i = 0; i < r.length; ) {
+      for (var i = 0; i < r.length;) {
         var range = new vscode.Range(r[i + 1], r[i + 2], r[i + 3], r[i + 4]);
         var hover = "";
         switch (r[i]) {

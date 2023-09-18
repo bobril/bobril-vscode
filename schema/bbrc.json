@@ -123,6 +123,15 @@
                         "type": "string"
                     }
                 },
+                "imports": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
                 "preserveProjectRoot": {
                     "type": "boolean"
                 },

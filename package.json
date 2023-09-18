@@ -2,7 +2,7 @@
   "name": "bobril",
   "displayName": "bobril",
   "description": "Help you to code in Bobril",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "publisher": "bobris",
   "engines": {
     "vscode": "^1.42.0"

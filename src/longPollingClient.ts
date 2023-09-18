@@ -8,7 +8,7 @@ export class Connection {
   private sendTimer?: NodeJS.Timer;
   private closed: boolean;
   private longPolling?: http.ClientRequest;
-  private heartBeatTimer?: NodeJS.Timer;
+  private heartBeatTimer?: NodeJS.Timeout;
 
   onMessage?: (connection: Connection, message: string, data: any) => void;
   onClose?: (connection: Connection) => void;
