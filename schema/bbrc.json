@@ -1,164 +1,167 @@
 {
-    "title": "JSON schema for Bobril-build configuration file .bbrc",
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "allOf": [
-        {
-            "type": "object",
-            "properties": {
-                "bbVersion": {
-                    "type": "string",
-                    "description": "Version of bobril-build which should be used (1.44.0)"
-                },
-                "tsVersion": {
-                    "type": "string",
-                    "description": "Version of TypeScript compiler"
-                },
-                "variant": {
-                    "type": "string",
-                    "enum": [
-                        "",
-                        "worker",
-                        "serviceworker"
-                    ],
-                    "default": ""
-                },
-                "jasmineVersion": {
-                    "type": "string",
-                    "enum": [
-                        "2.99",
-                        "3.3",
-                        "4.0"
-                    ],
-                    "default": "3.3"
-                },
-                "nohtml": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "title": {
-                    "type": "string",
-                    "default": "Bobril Application"
-                },
-                "head": {
-                    "type": "string",
-                    "default": "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />"
-                },
-                "prefixStyleDefs": {
-                    "type": "string"
-                },
-                "example": {
-                    "type": "string"
-                },
-                "additionalResourcesDirectory": {
-                    "type": "string"
-                },
-                "dependencies": {
-                    "type": "string",
-                    "default": "install",
-                    "enum": [
-                        "disabled",
-                        "upgrade",
-                        "install"
-                    ]
-                },
-                "includeSources": {
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "ignoreDiagnostic": {
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "generateSpritesTs": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "warningsAsErrors": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "obsolete": {
-                    "type": "string"
-                },
-                "testDirectories": {
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "localize": {
-                    "type": "boolean"
-                },
-                "pathToTranslations": {
-                    "type": "string"
-                },
-                "tsconfigUpdate": {
-                    "type": "boolean"
-                },
-                "library": {
-                    "type": "boolean",
-                    "description": "When true bb build will autoenable noHtml mode and bundle will became esm library"
-                },
-                "buildOutputDir": {
-                    "type": "string",
-                    "default": "dist"
-                },
-                "defines": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "envs": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "imports": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                },
-                "preserveProjectRoot": {
-                    "type": "boolean"
-                },
-                "proxyUrl": {
-                    "type": "string"
-                },
-                "headlessBrowserStrategy": {
-                    "type": "string",
-                    "enum": [
-                        "default",
-                        "PreferFirefoxOnWindows"
-                    ],
-                    "default": "default"
-                },
-                "compilerOptions": {
-                    "type": "object",
-                    "properties": {
-                        "noPropertyAccessFromIndexSignature": {
-                            "type": "boolean",
-                            "default": false
-                        }
-                    }
-                }
-            }
+  "title": "JSON schema for Bobril-build configuration file .bbrc",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "bbVersion": {
+          "type": "string",
+          "description": "Version of bobril-build which should be used (4.13.0)"
         },
-        {
-            "$ref": "https://json.schemastore.org/tsconfig.json#/definitions/compilerOptionsDefinition"
+        "tsVersion": {
+          "type": "string",
+          "description": "Version of TypeScript compiler"
+        },
+        "variant": {
+          "type": "string",
+          "enum": ["", "worker", "serviceworker"],
+          "default": ""
+        },
+        "jasmineVersion": {
+          "type": "string",
+          "enum": ["2.99", "3.3", "4.0"],
+          "default": "3.3"
+        },
+        "nohtml": {
+          "type": "boolean",
+          "default": false
+        },
+        "title": {
+          "type": "string",
+          "default": "Bobril Application"
+        },
+        "head": {
+          "type": "string",
+          "default": "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />"
+        },
+        "prefixStyleDefs": {
+          "type": "string"
+        },
+        "example": {
+          "type": "string"
+        },
+        "additionalResourcesDirectory": {
+          "type": "string"
+        },
+        "dependencies": {
+          "type": "string",
+          "default": "install",
+          "enum": ["disabled", "upgrade", "install"]
+        },
+        "includeSources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "include": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "files": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "ignoreDiagnostic": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "generateSpritesTs": {
+          "type": "boolean",
+          "default": false
+        },
+        "warningsAsErrors": {
+          "type": "boolean",
+          "default": false
+        },
+        "obsolete": {
+          "type": "string"
+        },
+        "testDirectories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "localize": {
+          "type": "boolean"
+        },
+        "pathToTranslations": {
+          "type": "string"
+        },
+        "tsconfigUpdate": {
+          "type": "boolean"
+        },
+        "library": {
+          "type": "boolean",
+          "description": "When true bb build will autoenable noHtml mode and bundle will became esm library"
+        },
+        "buildOutputDir": {
+          "type": "string",
+          "default": "dist"
+        },
+        "defines": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "envs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "imports": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "null"]
+          }
+        },
+        "preserveProjectRoot": {
+          "type": "boolean"
+        },
+        "proxyUrl": {
+          "type": "string"
+        },
+        "headlessBrowserStrategy": {
+          "type": "string",
+          "enum": ["default", "PreferFirefoxOnWindows"],
+          "default": "default"
+        },
+        "compilerOptions": {
+          "type": "object",
+          "properties": {
+            "noPropertyAccessFromIndexSignature": {
+              "type": "boolean",
+              "default": false
+            }
+          }
         }
-    ]
+      }
+    },
+    {
+      "$ref": "https://json.schemastore.org/tsconfig.json#/definitions/compilerOptionsDefinition"
+    }
+  ]
 }
